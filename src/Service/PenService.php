@@ -30,7 +30,6 @@ class PenService
         $pen->setName($data['name']);
         $pen->setPrice($data['price']);
         $pen->setDescription($data['description']);
-        $pen->setBrand($data['brand']);
         $pen->setReference($faker->unique()->ean13);
 
         // Récupération du type de stylo
@@ -39,19 +38,19 @@ class PenService
             $type = $this->typeRepository->find($data['type']);
 
             if(!$type)
-                throw new \Exception("Le type renseigné n'existe pas");
+                throw new \Exception("Le type renseignée n'existe pas");
 
             $pen->setType($type);
         }
 
         // Récupération de la marque
-        if(!empty($data['brand']))
-        {
+        if (!empty($data['brand'])) {
             $brand = $this->brandRepository->find($data['brand']);
-
-            if(!$brand)
-                throw new \Exception("Le type renseigné n'existe pas");
-
+    
+            if (!$brand) {
+                throw new \Exception("La marque renseignée n'existe pas");
+            }
+    
             $pen->setBrand($brand);
         }
 
@@ -61,7 +60,7 @@ class PenService
             $color = $this->colorRepository->find($data['color']);
 
             if(!$color)
-                throw new \Exception("Le type renseigné n'existe pas");
+                throw new \Exception("La couleur renseigné n'existe pas");
 
             $pen->addColor($color);
         }
@@ -112,6 +111,28 @@ class PenService
                 throw new \Exception("Le type renseigné n'existe pas");
 
             $pen->setType($type);
+        }
+
+        // Récupération de la marque
+        if (!empty($data['brand'])) {
+            $brand = $this->brandRepository->find($data['brand']);
+    
+            if (!$brand) {
+                throw new \Exception("La marque renseignée n'existe pas");
+            }
+    
+            $pen->setBrand($brand);
+        }
+
+        // Récupération de la couleur
+        if(!empty($data['color']))
+        {
+            $color = $this->colorRepository->find($data['color']);
+
+            if(!$color)
+                throw new \Exception("La couleur renseigné n'existe pas");
+
+            $pen->addColor($color);
         }
 
         // Récupération du matériel
