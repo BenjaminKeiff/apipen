@@ -45,7 +45,7 @@ class PenController extends AbstractController
             $pen = $penService->createFromJsonString($request->getContent());
 
             return $this->json($pen, context: [
-                'groups' => ['pen:read'],
+                'groups' => ['pens:read'],
             ]);
         } catch (\Exception $e) {
             return $this->json([
@@ -55,7 +55,7 @@ class PenController extends AbstractController
         }
     }
     
-    #[Route('/pen/{id}', name: 'app_pen_add', methods: ['PUT','PATCH'])]
+    #[Route('/pen/{id}', name: 'app_pen_update', methods: ['PUT','PATCH'])]
     public function update(
         Pen $pen,
         Request $request,
