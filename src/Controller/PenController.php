@@ -6,9 +6,8 @@ use App\Entity\Pen;
 use App\Repository\MaterialRepository;
 use App\Repository\PenRepository;
 use App\Repository\TypeRepository;
-use Doctrine\DBAL\Driver\IBMDB2\Exception\Factory;
+use App\Service\PenService;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpParser\Node\Stmt\TryCatch;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +28,7 @@ class PenController extends AbstractController
     );
     }
 
-    #[Route('/pen/{id}', name: 'app_pen_get')]
+    #[Route('/pen/{id}', name: 'app_pen_get', methods: ['GET'])]
     public function get(Pen $pen): JsonResponse
     {
         return $this->json($pen, context: ['groups' => 'pens:read']);
@@ -38,48 +37,12 @@ class PenController extends AbstractController
     #[Route('/pens', name: 'app_pen_add', methods: ['POST'])]
     public function add(
         Request $request,
-        EntityManagerInterface $em,
-        TypeRepository $typeRepository,
-        MaterialRepository $materialRepository,
+        PenService $penService
     ): JsonResponse {
         try {
             // On recupère les données du corps de la requête
             // Que l'on transforme ensuite en tableau associatif
-            $data = json_decode($request->getContent(), true);
-
-            $faker = \Faker\Factory::create();
-
-            // On traite les données pour créer un nouveau Stylo
-            $pen = new Pen();
-            $pen->setName($data['name']);
-            $pen->setPrice($data['price']);
-            $pen->setDescription($data['description']);
-            $pen->setReference($faker->unique()->ean13);
-
-            // Récupération du type de stylo
-            if(!empty($data['type']))
-            {
-                $type = $typeRepository->find($data['type']);
-
-                if(!$type)
-                    throw new \Exception("Le type renseigné n'existe pas");
-
-                $pen->setType($type);
-            }
-
-            // Récupération du matériel
-            if(!empty($data['material']))
-            {
-                $material = $materialRepository->find($data['material']);
-
-                if(!$material)
-                    throw new \Exception("Le matériel renseigné n'existe pas");
-
-                $pen->setMaterial($material);
-            }
-
-            $em->persist($pen);
-            $em->flush();
+            $pen = $penService->createFromJsonString($request->getContent());
 
             return $this->json($pen, context: [
                 'groups' => ['pen:read'],
@@ -91,51 +54,18 @@ class PenController extends AbstractController
             ], 500);
         }
     }
+    
     #[Route('/pen/{id}', name: 'app_pen_add', methods: ['PUT','PATCH'])]
     public function update(
         Pen $pen,
         Request $request,
-        EntityManagerInterface $em,
-        TypeRepository $typeRepository,
-        MaterialRepository $materialRepository,
+        PenService $penService
     ): JsonResponse {
         try {
-            // On recupère les données du corps de la requête
-            // Que l'on transforme ensuite en tableau associatif
-            $data = json_decode($request->getContent(), true);
-
-            // On traite les données pour créer un nouveau Stylo
-            $pen->setName($data['name']);
-            $pen->setPrice($data['price']);
-            $pen->setDescription($data['description']);
-
-            // Récupération du type de stylo
-            if(!empty($data['type']))
-            {
-                $type = $typeRepository->find($data['type']);
-
-                if(!$type)
-                    throw new \Exception("Le type renseigné n'existe pas");
-
-                $pen->setType($type);
-            }
-
-            // Récupération du matériel
-            if(!empty($data['material']))
-            {
-                $material = $materialRepository->find($data['material']);
-
-                if(!$material)
-                    throw new \Exception("Le matériel renseigné n'existe pas");
-
-                $pen->setMaterial($material);
-            }
-
-            $em->persist($pen);
-            $em->flush();
-
+            $penService->updateWithJsonData($pen, $request->getContent());
+            
             return $this->json($pen, context: [
-                'groups' => ['pen:read'],
+                'groups' => ['pens:read'],
             ]);
         } catch (\Exception $e) {
             return $this->json([
