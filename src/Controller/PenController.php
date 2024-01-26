@@ -3,20 +3,34 @@
 namespace App\Controller;
 
 use App\Entity\Pen;
-use App\Repository\MaterialRepository;
+use App\Service\PenService;
+use OpenApi\Attributes as OA;
 use App\Repository\PenRepository;
 use App\Repository\TypeRepository;
-use App\Service\PenService;
+use App\Repository\MaterialRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api')]
+#[OA\Tag(name: 'Stylos')]
+#[Security(name: 'Bearer')]
 class PenController extends AbstractController
 {
     #[Route('/pens', name: 'app_pens', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne tous les stylos.',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Pen::class, groups: ['pens:read']))
+        )
+    )]
+    
     public function index(PenRepository $penRepository): JsonResponse
     {
 

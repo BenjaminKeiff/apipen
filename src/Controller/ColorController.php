@@ -9,11 +9,25 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Attributes as OA;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+
 
 #[Route('/api')]
+#[OA\Tag(name: 'Couleurs')]
+#[Security(name: 'Bearer')]
 class ColorController extends AbstractController
 {
     #[Route('/colors', name: 'app_colors', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne toutes les couleurs de stylo.',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Color::class, groups: ['colors:read']))
+        )
+    )]
     public function index(ColorRepository $colorRepository): JsonResponse
     {
         $colors = $colorRepository->findAll();
@@ -25,12 +39,28 @@ class ColorController extends AbstractController
     }
 
     #[Route('/color/{id}', name: 'app_color_get', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne une couleur de stylo.',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Color::class, groups: ['colors:read']))
+        )
+    )]
     public function get(Color $color): JsonResponse
     {
         return $this->json($color, context: ['groups' => 'colors:read']);
     }
 
     #[Route('/colors', name: 'app_color_add', methods: ['POST'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Ajoute une couleur de stylo.',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Color::class, groups: ['colors:read']))
+        )
+    )]
     public function add(
         Request $request,
         EntityManagerInterface $em,
@@ -53,6 +83,14 @@ class ColorController extends AbstractController
         }
     }
     #[Route('/color/{id}', name: 'app_color_update', methods: ['PUT','PATCH'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Modifie une couleur de stylo.',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Color::class, groups: ['colors:read']))
+        )
+    )]
     public function update(
         Color $color,
         Request $request,
@@ -77,6 +115,14 @@ class ColorController extends AbstractController
     }
 
     #[Route('/color/{id}', name: 'app_color_delete', methods: ['DELETE'])]
+    #[OA\Response(
+        response: 200,
+        description: "Supprime une couleur de stylo. (Seulement s'il n'a aucune affiliation avec un stylo)",
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Color::class, groups: ['colors:read']))
+        )
+    )]
     public function delete(Color $color, EntityManagerInterface $em): JsonResponse
     {
         try {
